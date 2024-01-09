@@ -3,13 +3,18 @@ import React, { useState, forwardRef, useImperativeHandle } from 'react'
 import icon_close_modal from '../assets/icon_close_modal.png'
 import { getUUID } from '../utils/UUID'
 import { load, save } from '../utils/Storage'
+import { account } from '../views/Home'
 
 export interface Ref {
-  show: () => void,
+  show: (ID?: string) => void,
   close: () => void,
 }
 
-export default forwardRef(({}, ref) => {
+export interface Props {
+  onSave?: () => void
+}
+
+export default forwardRef(({ onSave }: Props, ref) => {
 
   const [ID, setID] = useState('')
   const [visible, setVisible] = useState(false)
@@ -29,15 +34,34 @@ export default forwardRef(({}, ref) => {
     }
 
     const accountsStr = await load('accounts')
-    const accounts = accountsStr ? JSON.parse(accountsStr) : []
-    accounts.push(newAccount)
+    let accounts: account[] = accountsStr ? JSON.parse(accountsStr) : []
+    if (isModify) {
+      accounts = accounts.map(item => {
+        return item.ID === ID ? newAccount : item
+      })
+    } else {
+      accounts.push(newAccount)
+    }
     await save('accounts', JSON.stringify(accounts))
+    onSave && onSave()
     close()
   }
 
-  const show = () => {
+  const show = async (ID: string = '') => {
+    if (ID) {
+      const accountsStr = await load('accounts')
+      const accounts: account[] = accountsStr ? JSON.parse(accountsStr) : []
+      const currentAccount = accounts.find(item => item.ID === ID)
+      setID(currentAccount!.ID)
+      setType(currentAccount!.type)
+      setName(currentAccount!.name)
+      setAccount(currentAccount!.account)
+      setPassword(currentAccount!.password)
+      setIsModify(true)
+    } else {
+      setID(getUUID())
+    }
     setVisible(true)
-    setID(getUUID())
   }
   const close = () => {
     setVisible(false)
