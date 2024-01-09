@@ -1,28 +1,37 @@
-import { Modal, StyleSheet, Text, View, KeyboardAvoidingView, Platform, TouchableOpacity, Image, TextInput } from 'react-native'
-import React, { useState, forwardRef, useImperativeHandle } from 'react'
-import icon_close_modal from '../assets/icon_close_modal.png'
-import { getUUID } from '../utils/UUID'
-import { load, save } from '../utils/Storage'
-import { account } from '../views/Home'
+import {
+  Modal,
+  StyleSheet,
+  Text,
+  View,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableOpacity,
+  Image,
+  TextInput,
+} from 'react-native';
+import React, {useState, forwardRef, useImperativeHandle} from 'react';
+import icon_close_modal from '../assets/icon_close_modal.png';
+import {getUUID} from '../utils/UUID';
+import {load, save} from '../utils/Storage';
+import {account as accountType} from '../views/Home';
 
 export interface Ref {
-  show: (ID?: string) => void,
-  close: () => void,
+  show: (ID?: string) => void;
+  close: () => void;
 }
 
 export interface Props {
-  onSave?: () => void
+  onSave?: () => void;
 }
 
-export default forwardRef(({ onSave }: Props, ref) => {
-
-  const [ID, setID] = useState('')
-  const [visible, setVisible] = useState(false)
-  const [isModify, setIsModify] = useState(false)
-  const [type, setType] = useState('游戏')
-  const [name, setName] = useState('')
-  const [account, setAccount] = useState('')
-  const [password, setPassword] = useState('')
+export default forwardRef(({onSave}: Props, ref) => {
+  const [ID, setID] = useState('');
+  const [visible, setVisible] = useState(false);
+  const [isModify, setIsModify] = useState(false);
+  const [type, setType] = useState('游戏');
+  const [name, setName] = useState('');
+  const [account, setAccount] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleSavePress = async () => {
     const newAccount = {
@@ -30,103 +39,100 @@ export default forwardRef(({ onSave }: Props, ref) => {
       type,
       name,
       account,
-      password
-    }
+      password,
+    };
 
-    const accountsStr = await load('accounts')
-    let accounts: account[] = accountsStr ? JSON.parse(accountsStr) : []
+    const accountsStr = await load('accounts');
+    let accounts: accountType[] = accountsStr ? JSON.parse(accountsStr) : [];
     if (isModify) {
       accounts = accounts.map(item => {
-        return item.ID === ID ? newAccount : item
-      })
+        return item.ID === ID ? newAccount : item;
+      });
     } else {
-      accounts.push(newAccount)
+      accounts.push(newAccount);
     }
-    await save('accounts', JSON.stringify(accounts))
-    onSave && onSave()
-    close()
-  }
+    await save('accounts', JSON.stringify(accounts));
+    onSave && onSave();
+    close();
+  };
 
-  const show = async (ID: string = '') => {
+  const show = async (ID = '') => {
     if (ID) {
-      const accountsStr = await load('accounts')
-      const accounts: account[] = accountsStr ? JSON.parse(accountsStr) : []
-      const currentAccount = accounts.find(item => item.ID === ID)
-      setID(currentAccount!.ID)
-      setType(currentAccount!.type)
-      setName(currentAccount!.name)
-      setAccount(currentAccount!.account)
-      setPassword(currentAccount!.password)
-      setIsModify(true)
+      const accountsStr = await load('accounts');
+      const accounts: accountType[] = accountsStr
+        ? JSON.parse(accountsStr)
+        : [];
+      const currentAccount = accounts.find(item => item.ID === ID);
+      setID(currentAccount!.ID);
+      setType(currentAccount!.type);
+      setName(currentAccount!.name);
+      setAccount(currentAccount!.account);
+      setPassword(currentAccount!.password);
+      setIsModify(true);
     } else {
-      setID(getUUID())
+      setID(getUUID());
     }
-    setVisible(true)
-  }
+    setVisible(true);
+  };
   const close = () => {
-    setVisible(false)
-  }
+    setVisible(false);
+  };
 
   useImperativeHandle(ref, () => {
     return {
       show,
-      close
-    }
-  })
+      close,
+    };
+  });
 
   const renderType = () => {
-    const types = ['游戏', '平台', '银行卡', '其它']
+    const types = ['游戏', '平台', '银行卡', '其它'];
     const computeStyle = (item: string, index: number) => [
       styles.typeTab,
-      index === 0
-        ? styles.leftTab
-        : index === 3
-          ? styles.rightTab
-          : {},
+      index === 0 ? styles.leftTab : index === 3 ? styles.rightTab : {},
       index > 0 && styles.moveLeft1Pix,
-      { backgroundColor: type === item ? '#3050ff' : 'transparent' }
-    ]
+      {backgroundColor: type === item ? '#3050ff' : 'transparent'},
+    ];
     const handleSetType = (item: string) => {
-      setType(item)
-    }
+      setType(item);
+    };
 
     return (
       <View style={styles.typeContainer}>
-        {
-          types.map((item, index) => (
-            <TouchableOpacity
-              key={item}
-              style={computeStyle(item, index)}
-              onPress={() => handleSetType(item)}
-            >
-              <Text style={[styles.typeTabTxt, { color: type === item ? 'white' : '#666666' }]}>
-                {item}
-              </Text>
-            </TouchableOpacity>
-          ))
-        }
+        {types.map((item, index) => (
+          <TouchableOpacity
+            key={item}
+            style={computeStyle(item, index)}
+            onPress={() => handleSetType(item)}>
+            <Text
+              style={[
+                styles.typeTabTxt,
+                {color: type === item ? 'white' : '#666666'},
+              ]}>
+              {item}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
-    )
-  }
+    );
+  };
 
   return (
     <Modal
       visible={visible}
       transparent={true}
       statusBarTranslucent={true}
-      animationType='fade'
-      onRequestClose={close}
-    >
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.root}>
+      animationType="fade"
+      onRequestClose={close}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.root}>
         <View style={styles.content}>
           <View style={styles.titleContainer}>
             <Text style={styles.titleTxt}>
               {isModify ? '修改账号' : '添加账号'}
             </Text>
-            <TouchableOpacity
-              style={styles.titleCloseButton}
-              onPress={close}
-            >
+            <TouchableOpacity style={styles.titleCloseButton} onPress={close}>
               <Image style={styles.titleCloseImg} source={icon_close_modal} />
             </TouchableOpacity>
           </View>
@@ -159,17 +165,14 @@ export default forwardRef(({ onSave }: Props, ref) => {
               setPassword(text || '');
             }}
           />
-          <TouchableOpacity
-            style={styles.saveButton}
-            onPress={handleSavePress}
-          >
+          <TouchableOpacity style={styles.saveButton} onPress={handleSavePress}>
             <Text style={styles.saveTxt}>保 存</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
     </Modal>
-  )
-})
+  );
+});
 
 const styles = StyleSheet.create({
   root: {
@@ -228,7 +231,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   typeTabTxt: {
-    fontSize: 14
+    fontSize: 14,
   },
   leftTab: {
     borderTopLeftRadius: 8,
@@ -265,5 +268,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'white',
     fontWeight: 'bold',
-  }
-})
+  },
+});
